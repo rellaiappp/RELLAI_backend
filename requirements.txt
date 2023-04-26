@@ -1,6 +1,2 @@
 fastapi
 uvicorn
-mangum
-pydantic
-pyrebase
-firebase_admin
