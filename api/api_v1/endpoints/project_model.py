@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Union
+from typing import List
 
 class Client(BaseModel):
       nome: str
@@ -27,7 +28,7 @@ class Quote(BaseModel):
     id: Union[int, None] = None
     title: str
     type: str
-    items: list[Item]
+    items: List[Item]
 
 class Project(BaseModel):
     creator_id: str
