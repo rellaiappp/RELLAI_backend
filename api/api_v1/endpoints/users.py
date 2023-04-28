@@ -15,6 +15,7 @@ class User(BaseModel):
     uid: str
     role: str
     mail: str
+    name: str
 
 @router.post("/register")
 async def register_user(request: Request, user: User):
@@ -26,6 +27,7 @@ async def register_user(request: Request, user: User):
             u'auth_id': uid,
             u'role': user.role,
             u'mail': user.mail,
+            u'name': user.name,
         })
         #request.app.database["users"].insert_one({"uid":user.uid,"role":user.role})
         return {"message":"User created successfully!"}
