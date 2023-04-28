@@ -37,14 +37,11 @@ async def create_project(request: Request, data: Project):
         project = {
             u'creator_id': uid,
             u'general_info': dict(data.general_info),
-            u'client': dict(data.client_info)
+            u'client': dict(data.client_info),
+            u'client_mail': data.client_mail,
         }
         doc_ref = request.app.db.collection(u'projects').add(project)
         print(sendConfirmationEmail(data.client_info.email,doc_ref[1].id))
-        
-        #request.app.database["users"].insert_one({"uid":user.uid,"role":user.role})
-        return {"message":"User created successfully!"}
+        return {"message":"Project created successfully!"}
     except Exception as e:
-        #traceback.print_exc()
-        #return {"message":e}
         raise HTTPException(status_code=400, detail=e)

@@ -3,7 +3,6 @@ from fastapi import APIRouter, Body, Request, Response, HTTPException, status
 from firebase_admin import credentials, auth
 from pydantic import BaseModel
 router = APIRouter()
-from pymongo import MongoClient
 import traceback
 
 

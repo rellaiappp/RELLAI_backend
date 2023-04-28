@@ -1,17 +1,16 @@
 from pydantic import BaseModel
 
 class Client(BaseModel):
-    full_name: str
-    email: str
-    phone: str
+      nome: str
+      email: str
+      numero_cellulare: str
 
-class SiteInformation(BaseModel):
-    address: str
-    city: str
-    region: str
-    year_built: str
-    floor: str
-    area: str
+class GeneralInformation(BaseModel):
+      nome_progetto: str
+      tipologia_abitazione: str
+      eta_edificio: str
+      metri_quadrati: str
+      tipo_intervento: str
 
 class Item(BaseModel):
     id: int | None = None
@@ -31,5 +30,6 @@ class Quote(BaseModel):
 class Project(BaseModel):
     creator_id: str
     status: str
-    general_info: SiteInformation
+    general_info: GeneralInformation
     client_info: Client
+    client_mail: str
