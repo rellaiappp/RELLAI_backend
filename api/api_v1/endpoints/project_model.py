@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Union
 
 class Client(BaseModel):
       nome: str
@@ -13,7 +14,7 @@ class GeneralInformation(BaseModel):
       tipo_intervento: str
 
 class Item(BaseModel):
-    id: int | None = None
+    id: Union[int, None] = None
     name: str
     type: str
     description: str
@@ -21,8 +22,9 @@ class Item(BaseModel):
     quantity: int
     unit_price: float
 
+
 class Quote(BaseModel):
-    id: int | None = None
+    id: Union[int, None] = None
     title: str
     type: str
     items: list[Item]
