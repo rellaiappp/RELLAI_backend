@@ -7,10 +7,6 @@ import traceback
 
 
 
-@router.get("/")
-async def get_users():
-    return {"message":"Users!"}
-
 class User(BaseModel):
     uid: str
     role: str
@@ -35,4 +31,23 @@ async def register_user(request: Request, user: User):
         traceback.print_exc()
         return {"message":e}
         #raise HTTPException(status_code=400, detail=e)
+
+@router.get("/data")
+async def get_user_projects(request: Request,id: str):
+    try:
+        jwt = request.headers['Authorization'].split('bearer ')[1]
+        decoded_token = auth.verify_id_token(jwt)
+        assert decoded_token['uid'] == id
+        users = []
+        for doc in request.app.db.collection(u'users').where(u'auth_id', u'==', id).stream():
+            users.append(doc.to_dict())
+        if len(users) == 0:
+            raise Exception("No user found with the given id in the databse")
+        else:
+            print(users[0])
+            return {"user":users[0]}
+    except Exception as e:
+        traceback.print_exc()
+        #return {"message":e}
+        raise HTTPException(status_code=400, detail=e)
     
