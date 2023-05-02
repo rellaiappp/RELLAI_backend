@@ -6,7 +6,7 @@ class User(BaseModel):
     name: str
     surname: str
     email: str
-    isProfessional: str
+    isProfessional: bool
     business_type: Union[str, None] = None
     phone_number: Union[str, None] = None
     profile_picture: Union[str, None] = None

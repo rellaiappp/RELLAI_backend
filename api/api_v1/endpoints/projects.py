@@ -18,9 +18,9 @@ async def get_user_projects(request: Request,auth_token: str):
         print(auth_token)
         decoded_token = auth.verify_id_token(auth_token)
         uid = decoded_token['uid']
-        projects = []
-        for doc in request.app.db.collection(u'projects').where(u'creator_id', u'==', uid).stream():
-            projects.append(doc.to_dict())
+        projects = ProjectDataManagement.get_user_projects(uid, request.app.db)
+        # for doc in request.app.db.collection(u'projects').where(u'creator_id', u'==', uid).stream():
+        #     projects.append(doc.to_dict())
         return {"projects":projects}
     except Exception as e:
         traceback.print_exc()
@@ -106,10 +106,10 @@ async def reject_invite(request: Request,invite_id: str):
 async def create_quote(request: Request, data: Quote):
     print(data)
     try:
-        print(request.headers['Authorization'])
         jwt = request.headers['Authorization'].split('bearer ')[1]
         decoded_token = auth.verify_id_token(jwt)
         assert decoded_token['uid'] == data.creator_id
+        print('arrivatoqui')
         ProjectDataManagement.create_quote(data,request.app.db)
         return {"message":"Project created successfully!"}
     except Exception as e:

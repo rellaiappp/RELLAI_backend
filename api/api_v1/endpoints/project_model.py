@@ -21,16 +21,17 @@ class Item(BaseModel):
     item_name: str
     item_type: str
     item_description: str
-    item_unit: str
-    item_number: str
-    item_unit_price: str
-    item_completion: str
+    item_unit: int
+    item_number: int
+    item_unit_price: float
+    item_completion: int
 
 
 class Quote(BaseModel):
     id: Union[int, None] = None
     timestamp: Union[str, None] = None
     creator_id: str
+    quote_description: str
     project_id: str
     quote_name: str
     quote_type: str
@@ -39,6 +40,7 @@ class Quote(BaseModel):
     quote_status: str
     accepted: bool
     total_price: Union[float, None] = None
+    quote_completion: Union[float, None] = None
 
 class CompletitionRequest(BaseModel):
     id: Union[int, None] = None
@@ -51,12 +53,16 @@ class CompletitionRequest(BaseModel):
 
 
 class Project(BaseModel):
+    id: Union[int, None] = None
+    timestamp: Union[str, None] = None
     creator_id: str
     status: str
     general_info: GeneralInformation
     client_info: Client
     client_mail: str
     total: Union[str,None] = None
+
+
 
 class Invite(BaseModel):
     sender_id: str
