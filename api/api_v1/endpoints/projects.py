@@ -62,7 +62,7 @@ async def create_project(request: Request, data: Project):
     
 
 @router.get("/invites/data")
-async def get_invites(request: Request,id: str):
+async def get_invites_routes(request: Request,id: str):
     try: 
         print(request.headers['Authorization'])
         jwt = request.headers['Authorization'].split('bearer ')[1]
@@ -102,8 +102,9 @@ async def reject_invite(request: Request,invite_id: str):
     except Exception as e:
         raise HTTPException(status_code=400, detail=e)
 
-@router.post("/quote/create")
+@router.post("/quotes")
 async def create_quote(request: Request, data: Quote):
+    print(data)
     try:
         print(request.headers['Authorization'])
         jwt = request.headers['Authorization'].split('bearer ')[1]
@@ -111,5 +112,17 @@ async def create_quote(request: Request, data: Quote):
         assert decoded_token['uid'] == data.creator_id
         ProjectDataManagement.create_quote(data,request.app.db)
         return {"message":"Project created successfully!"}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=400, detail=e)
+    
+@router.get("/{project_id}/data")
+async def get_project(request: Request,project_id: str):
+    try: 
+        print(request.headers['Authorization'])
+        jwt = request.headers['Authorization'].split('bearer ')[1]
+        result = ProjectDataManagement.get_project(project_id, request.app.db)
+        print(result)
+        return {"project":result}
     except Exception as e:
         raise HTTPException(status_code=400, detail=e)

@@ -40,7 +40,7 @@ def create_project(request, data):
     except Exception as e:
         raise HTTPException(status_code=400, detail=e)
 
-async def get_invites_routes(request: Request,id: str):
+async def get_invites(request: Request,id: str):
     try: 
         print(request.headers['Authorization'])
         jwt = request.headers['Authorization'].split('bearer ')[1]

@@ -67,7 +67,6 @@ class ProjectDataManagement:
 
     def create_quote(quote,db):
         quote_obj = {
-            u'quote_id': quote.quote_id,
             u'creator_id': quote.creator_id,
             u'project_id': quote.project_id,
             u'quote_name': quote.quote_name,
@@ -77,15 +76,15 @@ class ProjectDataManagement:
             u'quote_status': quote.quote_type,
             u'quote_accepted': quote.quote_type,
         }
-        doc_ref = db.collection('items').add(quote_obj)
-        record = db.collection('items').document(doc_ref[1].id)
+        doc_ref = db.collection('quotes').add(quote_obj)
+        record = db.collection('quotes').document(doc_ref[1].id)
         print(record)
         record.update({
             u'id': doc_ref[1].id,
             u'timestamp': time.time_ns(),
         })
-
         for i in range(len(quote.items)):
+            quote.items[i].quote_id = doc_ref[1].id
             ProjectDataManagement.create_item(quote.items[i],doc_ref[1].id,db)
         return True
 
@@ -124,7 +123,7 @@ class ProjectDataManagement:
             u'item_unit': item.item_unit,
             u'item_number': item.item_number,
             u'item_unit_price:': item.item_unit_price,
-            u'item_completition': item.completition,
+            u'item_completion': item.item_completion,
         }
         doc_ref = db.collection('items').add(item_obj)
         record = db.collection('items').document(doc_ref[1].id)
@@ -187,5 +186,73 @@ class ProjectDataManagement:
         ProjectDataManagement.create_relation(user_id=id,project_id=invite['project_id'],role=invite['user_role'],is_admin=False,db=db)
         return True
 
+    def get_items(quote_id,db):
+        items = []
+        for doc in db.collection(u'items').where(u'quote_id', u'==', quote_id).stream():
+            items.append(doc.to_dict())
+        # if len(items) == 0:
+        #     raise Exception("No items found with the given id in the databse")
+        return items
     
+    def get_project(project_id,db):
+        projects = []
+        for doc in db.collection(u'projects').where(u'id', u'==', project_id).stream():
+            projects.append(doc.to_dict())
+        print(len(projects))
+        if len(projects) == 0:
+            raise Exception("No project found with the given id in the databse")
+        for i in range(len(projects)):
+            for doc in db.collection(u'users').where(u'auth_id', u'==', projects[i]['creator_id']).stream():
+                projects[i]['creator_info'] = doc.to_dict()
+            projects[i]['quotation'] = []
+            projects[i]['variation_order'] = []
+            projects[i]['change_order'] = []
+            quotes = ProjectDataManagement.get_quotes(projects[i]['id'],db)
+            for j in range(len(quotes)):
+                if quotes[j]['quote_type'] == 'quotation':
+                    projects[i]['quotations'] = []
+                    projects[i]['quotations'].append(quotes[j])
+                elif quotes[j]['quote_type'] == 'variation_order':
+                    projects[i]['variation_orders'] = []
+                    projects[i]['variation_orders'].append(quotes[j])
+                elif quotes[j]['quote_type'] == 'change_order':
+                    projects[i]['change_orders'] = []
+                    projects[i]['change_orders'].append(quotes[j])
+            total = 0
+            try:
+                for k in range(len(quotes)):
+                    if quotes[i]['quote_type'] == 'quotation':
+                        projects[0]['quotations'].append(quotes[k])
+                    elif quotes[i]['quote_type'] == 'variation_order':
+                        projects[0]['variation_order'].append(quotes[k])
+                    elif quotes[i]['quote_type'] == 'change_order':
+                        projects[0]['change_order'].append(quotes[k])
+                    total += float(quotes[k]['total_price'])
+            except: 
+                pass
+            projects[0]['total'] = str(total)
+
+
+        return projects[0]
+
+
+    def get_quotes(project_id,db):
+        quotes = []
+        for doc in db.collection(u'quotes').where(u'project_id', u'==', project_id).stream():
+            quotes.append(doc.to_dict())
+        if len(quotes) == 0:
+            raise Exception("No quotes found with the given id in the databse")
+        for i in range(len(quotes)):
+            items = ProjectDataManagement.get_items(quotes[i]['id'],db)
+
+            # if len(items) == 0:
+            #     raise Exception("No items found with the given id in the databse")
+            total = 0
+            try:
+                for k in range(len(items)):
+                    total += float(items[k]['item_unit_price']) * float(items[k]['item_number'])
+            except:
+                pass
+            quotes[i]['total_price'] = str(total)
+        return quotes
 

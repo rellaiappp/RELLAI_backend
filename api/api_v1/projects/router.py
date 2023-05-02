@@ -8,7 +8,7 @@ from api.api_v1.endpoints.functions import sendConfirmationEmail
 from firebase_admin import firestore
 import time
 from data_management.projects import ProjectDataManagement
-from api.api_v1.endpoints.projects import get_projects,  get_invites
+from api.api_v1.endpoints.projects import get_projects,  get_invites, create_project
 
 
 router = APIRouter()
@@ -19,28 +19,14 @@ async def get_projects_route(request: Request,auth_token: str):
 
 @router.get("invites/data")
 async def get_invites_route(request: Request,id: str):
+    return await get_invites(request,id)
 
-async def get_user_projects(request: Request,id: str):
-    try:
-        jwt = request.headers['Authorization'].split('bearer ')[1]
-        decoded_token = auth.verify_id_token(jwt)
-        assert decoded_token['uid'] == id
-
-        uid = decoded_token['uid']
-        projects = []
-        for doc in request.app.db.collection(u'projects').where(u'creator_id', u'==', uid).stream():
-            projects.append(doc.to_dict())
-        return {"projects":projects}
-    except Exception as e:
-        traceback.print_exc()
-        #return {"message":e}
-        raise HTTPException(status_code=400, detail=e)
-
-
-
-
-@router.post("/create")
+@router.post("/")
+async def create_project_route(request: Request, data: Project):
+    return await create_project(request,data)
+    
 async def create_project(request: Request, data: Project):
+
     try:
         print(request.headers['Authorization'])
         jwt = request.headers['Authorization'].split('bearer ')[1]
