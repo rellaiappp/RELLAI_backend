@@ -8,6 +8,7 @@ from api.api_v1.endpoints.functions import sendConfirmationEmail
 from firebase_admin import firestore
 import time
 from data_management.projects import ProjectDataManagement
+import asyncio
 
 
 router = APIRouter()
@@ -55,7 +56,7 @@ async def create_project(request: Request, data: Project):
         decoded_token = auth.verify_id_token(jwt)
         assert decoded_token['uid'] == data.creator_id
         ProjectDataManagement.create_project(data,request.app.db)
-        print(sendConfirmationEmail(data.client_info.email,data.client_info.email))
+        asyncio.create_task(sendConfirmationEmail(data.client_info.email,data.client_info.email))
         return {"message":"Project created successfully!"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=e)
