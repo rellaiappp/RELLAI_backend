@@ -20,13 +20,10 @@ async def get_user_projects(request: Request,auth_token: str):
         decoded_token = auth.verify_id_token(auth_token)
         uid = decoded_token['uid']
         projects = ProjectDataManagement.get_user_projects(uid, request.app.db)
-        # for doc in request.app.db.collection(u'projects').where(u'creator_id', u'==', uid).stream():
-        #     projects.append(doc.to_dict())
         print(projects)
         return {"projects":projects}
     except Exception as e:
         traceback.print_exc()
-        #return {"message":e}
         raise HTTPException(status_code=400, detail=e)
 
 @router.get("invites/data")
@@ -121,8 +118,6 @@ async def create_quote(request: Request, data: Quote):
 @router.get("/{project_id}/data")
 async def get_project(request: Request,project_id: str):
     try: 
-        print(request.headers['Authorization'])
-        jwt = request.headers['Authorization'].split('bearer ')[1]
         result = ProjectDataManagement.get_project(project_id, request.app.db)
         print(result)
         return {"project":result}
