@@ -25,7 +25,7 @@ async def register_user(request: Request, user: User):
             u'mail': user.mail,
             u'name': user.name,
         })
-        #request.app.database["users"].insert_one({"uid":user.uid,"role":user.role})
+        request.app.database["users"].insert_one({"uid":user.uid,"role":user.role})
         return {"message":"User created successfully!"}
     except Exception as e:
         traceback.print_exc()

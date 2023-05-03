@@ -22,6 +22,7 @@ async def get_user_projects(request: Request,auth_token: str):
         projects = ProjectDataManagement.get_user_projects(uid, request.app.db)
         # for doc in request.app.db.collection(u'projects').where(u'creator_id', u'==', uid).stream():
         #     projects.append(doc.to_dict())
+        print(projects)
         return {"projects":projects}
     except Exception as e:
         traceback.print_exc()

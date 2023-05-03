@@ -2,6 +2,7 @@ import smtplib
 import traceback
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import asyncio
 
 def load_email_code(file):
     HTMLFile = open(file, "r")

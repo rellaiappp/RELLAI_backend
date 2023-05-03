@@ -21,7 +21,7 @@ class Item(BaseModel):
     item_name: str
     item_type: str
     item_description: str
-    item_unit: int
+    item_unit: str
     item_number: int
     item_unit_price: float
     item_completion: int
