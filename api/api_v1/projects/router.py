@@ -7,7 +7,7 @@ from api.api_v1.endpoints.project_model import Project, Invite, Quote
 from api.api_v1.endpoints.functions import sendConfirmationEmail
 from firebase_admin import firestore
 import time
-from data_management.projects import ProjectDataManagement
+from data_management.projects12 import ProjectDataManagement
 from api.api_v1.endpoints.projects import get_projects,  get_invites, create_project
 
 

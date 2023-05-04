@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Body, Request, Response, HTTPException, status
 from firebase_admin import credentials, auth
-from data_management.projects import ProjectDataManagement
+from data_management.projects12 import ProjectDataManagement
 from utils.email import sendConfirmationEmail
 
 def get_projects(request, auth_token):

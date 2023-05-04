@@ -15,20 +15,20 @@ class GeneralInformation(BaseModel):
       tipo_intervento: str
 
 class Item(BaseModel):
-    id: Union[int, None] = None
+    id: Union[str, None] = None
     timestamp: Union[str, None] = None
     quote_id: Union[str, None] = None
     item_name: str
     item_type: str
     item_description: str
     item_unit: str
-    item_number: int
+    item_number: float
     item_unit_price: float
-    item_completion: int
+    item_completion: float
 
 
 class Quote(BaseModel):
-    id: Union[int, None] = None
+    id: Union[str, None] = None
     timestamp: Union[str, None] = None
     creator_id: str
     quote_description: str
@@ -42,14 +42,6 @@ class Quote(BaseModel):
     total_price: Union[float, None] = None
     quote_completion: Union[float, None] = None
 
-class CompletitionRequest(BaseModel):
-    id: Union[int, None] = None
-    timestamp: Union[str, None] = None
-    creator_id: str
-    quote_id: str
-    items: List[Item]
-    note: str
-    images: List[str]
 
 
 class Project(BaseModel):
@@ -71,3 +63,14 @@ class Invite(BaseModel):
     user_role: str
     accepted: bool
 
+class CompletionRequest(BaseModel):
+    id: Union[str, None] = None
+    timestamp: Union[int, None] = None
+    creator_id: str
+    quote: Quote
+    quote_id: str
+    project_id: str
+    note: str
+    images: List[str] = []
+    accepted: bool
+    rejected: bool
