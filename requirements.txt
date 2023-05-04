@@ -2,5 +2,3 @@ requests
 fastapi
 uvicorn
 firebase-admin
-aiosmtplib
-gunicorn
