@@ -11,27 +11,24 @@ from fastapi.exceptions import HTTPException
 import ssl
 
 cred = credentials.Certificate('rellai_backend_firebase.json')
-firebase = None 
+firebase_admin.initialize_app(cred)
+
 
 app = FastAPI()
+app.db = firestore.client()
 
-allow_all = ['*']
-app.add_middleware(
-   CORSMiddleware,
-   allow_origins=allow_all,
-   allow_credentials=True,
-   allow_methods=allow_all,
-   allow_headers=allow_all
-)
+# allow_all = ['*']
+# app.add_middleware(
+#    CORSMiddleware,
+#    allow_origins=allow_all,
+#    allow_credentials=True,
+#    allow_methods=allow_all,
+#    allow_headers=allow_all
+# )
 
-@app.on_event("startup")
-async def startup_event():
-    firebase_admin.initialize_app(cred)
-    app.db = firestore.client()
 
 @app.get("/")
 async def root():
-  return {"message": "Hello World"}
+    return {"message": "Hello World"}
 
-app.include_router(api_router,prefix="/api/v1")
-
+app.include_router(api_router, prefix="/api/v1")

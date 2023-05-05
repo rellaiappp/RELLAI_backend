@@ -28,6 +28,7 @@ async def get_user_projects(request: Request, auth_token: str):
         return {"projects": projects}
     except Exception as e:
         traceback.print_exc()
+        return {"message": e}
         raise HTTPException(status_code=400, detail=e)
 
 
