@@ -4,14 +4,25 @@ from api.api_v1.endpoints.project_model import *
 from fastapi import APIRouter, Body, Request, Response, HTTPException, status
 
 
-
 class ProjectDataManagement:
 
     @staticmethod
     def get_projects(user_id, db):
-        relations = [doc.to_dict() for doc in db.collection(u'relations').where(u'user_id', u'==', user_id).stream()]
+        relations = [doc.to_dict() for doc in db.collection(
+            u'relations').where(u'user_id', u'==', user_id).stream()]
+        if relations == []:
+            return None
         project_ids = set(relation['project_id'] for relation in relations)
-        projects = [ProjectDataManagement.get_project(project_id, db) for project_id in project_ids]
+        projects = [ProjectDataManagement.get_project(
+            project_id, db) for project_id in project_ids]
+        # except AttributeError as e:
+        #     # You can log the error if needed
+        #     print(f"Error: {e}")
+        #     raise HTTPException(
+        #         status_code=500, detail="Internal Server Error")
+        # except Exception as e:
+        #     print(f"Error: {e}")
+        #     raise HTTPException(status_code=400, detail=str(e))
         return projects, project_ids
 
     @staticmethod
@@ -61,8 +72,10 @@ class ProjectDataManagement:
             u'timestamp': time.time_ns(),
         })
 
-        ProjectDataManagement.create_invitation(project.creator_id, doc_ref[1].id, project.client_info.email, 'client', db)
-        ProjectDataManagement.create_relation(project.creator_id, doc_ref[1].id, 'creator', True, db)
+        ProjectDataManagement.create_invitation(
+            project.creator_id, doc_ref[1].id, project.client_info.email, 'client', db)
+        ProjectDataManagement.create_relation(
+            project.creator_id, doc_ref[1].id, 'creator', True, db)
         return True
 
     @staticmethod
@@ -86,7 +99,8 @@ class ProjectDataManagement:
         })
         for i in range(len(quote.items)):
             quote.items[i].quote_id = doc_ref[1].id
-            ProjectDataManagement.create_item(quote.items[i], doc_ref[1].id, db)
+            ProjectDataManagement.create_item(
+                quote.items[i], doc_ref[1].id, db)
         return True
 
     @staticmethod
@@ -145,33 +159,38 @@ class ProjectDataManagement:
             invite = doc.to_dict()
 
         if not invites:
-            raise Exception("No invitation found with the given id in the database")
+            raise Exception(
+                "No invitation found with the given id in the database")
 
         record = db.collection('invites').document(invites[0].id)
         record.update({
             'accepted': True,
         })
 
-        ProjectDataManagement.create_relation(user_id=id, project_id=invite['project_id'], role=invite['user_role'], is_admin=False, db=db)
+        ProjectDataManagement.create_relation(
+            user_id=id, project_id=invite['project_id'], role=invite['user_role'], is_admin=False, db=db)
         return True
 
     @staticmethod
     def reject_invitation(invite_id, id, db):
         invite_doc = db.collection(u'invites').document(invite_id).get()
         if not invite_doc.exists:
-            raise Exception("No invitation found with the given id in the database")
+            raise Exception(
+                "No invitation found with the given id in the database")
 
         invite = invite_doc.to_dict()
         db.collection('invites').document(invite_id).update({
             'rejected': True,
         })
 
-        ProjectDataManagement.create_relation(user_id=id, project_id=invite['project_id'], role=invite['user_role'], is_admin=False, db=db)
+        ProjectDataManagement.create_relation(
+            user_id=id, project_id=invite['project_id'], role=invite['user_role'], is_admin=False, db=db)
         return True
 
     @staticmethod
     def get_items(quote_id, db):
-        items_docs = db.collection(u'items').where(u'quote_id', u'==', quote_id).stream()
+        items_docs = db.collection(u'items').where(
+            u'quote_id', u'==', quote_id).stream()
         items = [doc.to_dict() for doc in items_docs]
         return items
 
@@ -185,14 +204,18 @@ class ProjectDataManagement:
         project = project_doc.to_dict()
 
         creator_id = project['creator_id']
-        creator_doc = db.collection(u'users').where(u'auth_id', u'==', creator_id).limit(1).get()
+        creator_doc = db.collection(u'users').where(
+            u'auth_id', u'==', creator_id).limit(1).get()
         if creator_doc:  # Change this line
             project['creator_info'] = creator_doc[0].to_dict()
 
         quotes = ProjectDataManagement.get_quotes(project_id, db)
-        project['quotations'] = [quote for quote in quotes if quote['quote_type'] == 'quotation']
-        project['variation_orders'] = [quote for quote in quotes if quote['quote_type'] == 'variation_order']
-        project['change_orders'] = [quote for quote in quotes if quote['quote_type'] == 'change_order']
+        project['quotations'] = [
+            quote for quote in quotes if quote['quote_type'] == 'quotation']
+        project['variation_orders'] = [
+            quote for quote in quotes if quote['quote_type'] == 'variation_order']
+        project['change_orders'] = [
+            quote for quote in quotes if quote['quote_type'] == 'change_order']
 
         quote_ids = [quote['id'] for quote in quotes]
         items = ProjectDataManagement.get_items_for_quotes(quote_ids, db)
@@ -200,21 +223,24 @@ class ProjectDataManagement:
             quote_items = items.get(quote['id'], [])
             quote['items'] = quote_items
 
-        total = sum(float(quote['total_price']) for quote in quotes if quote['quote_type'] in ['quotation', 'variation_order', 'change_order'])
+        total = sum(float(quote['total_price']) for quote in quotes if quote['quote_type'] in [
+                    'quotation', 'variation_order', 'change_order'])
         project['total'] = total
         return project
 
     @staticmethod
     def get_quotes(project_id, db):
-        quotes_docs = db.collection(u'quotes').where(u'project_id', u'==', project_id).stream()
+        quotes_docs = db.collection(u'quotes').where(
+            u'project_id', u'==', project_id).stream()
         quotes = [doc.to_dict() for doc in quotes_docs]
         if not quotes:
             return quotes
 
         for quote in quotes:
-            
+
             items = ProjectDataManagement.get_items(quote['id'], db)
-            total_price = sum(map(lambda item: float(item['item_unit_price']) * float(item['item_number']) if 'item_unit_price' in item else 0, items))
+            total_price = sum(map(lambda item: float(item['item_unit_price']) * float(
+                item['item_number']) if 'item_unit_price' in item else 0, items))
 
             quote['total_price'] = total_price
 
@@ -225,7 +251,8 @@ class ProjectDataManagement:
         if not quote_ids:
             return []
 
-        items_docs = db.collection(u'items').where(u'quote_id', u'in', quote_ids).stream()
+        items_docs = db.collection(u'items').where(
+            u'quote_id', u'in', quote_ids).stream()
         items = [doc.to_dict() for doc in items_docs]
 
         items_by_quote = {}
@@ -241,7 +268,7 @@ class ProjectDataManagement:
     def get_quote_by_id(quote_id, db):
         # Recupera il documento della quotazione in base all'ID
         quote_doc = db.collection(u'quotes').document(quote_id).get()
-        
+
         # Se il documento non esiste, restituisci None
         if not quote_doc.exists:
             return None
@@ -251,20 +278,23 @@ class ProjectDataManagement:
 
         # Recupera gli elementi associati alla quotazione
         items = ProjectDataManagement.get_items(quote['id'], db)
-        
+
         # Calcola il prezzo totale
-        total_price = sum(float(item.get('item_unit_price', 0)) * float(item.get('item_number', 0)) for item in items)
+        total_price = sum(float(item.get('item_unit_price', 0))
+                          * float(item.get('item_number', 0)) for item in items)
 
         # Aggiungi il prezzo totale e gli elementi al dizionario della quotazione
         quote['total_price'] = total_price
         quote['items'] = items
 
         return quote
-    
+
     @staticmethod
     def create_completion_request(complition_request: CompletionRequest, db):
-        complition_request_obj = complition_request.dict()  # Use .dict() instead of .to_dict()
-        doc_ref = db.collection('complition_request').add(complition_request_obj)
+        # Use .dict() instead of .to_dict()
+        complition_request_obj = complition_request.dict()
+        doc_ref = db.collection('complition_request').add(
+            complition_request_obj)
         record = db.collection('complition_request').document(doc_ref[1].id)
         record.update({
             u'id': doc_ref[1].id,
@@ -276,15 +306,15 @@ class ProjectDataManagement:
                 'item_completion': item.item_completion
             })
         return True
-    
 
     @staticmethod
     def get_completion_requests(completion_request_id, db):
-        comp_req_doc = db.collection(u'complition_request').document(completion_request_id).get()
+        comp_req_doc = db.collection(u'complition_request').document(
+            completion_request_id).get()
         if not comp_req_doc.exists:
             return None
         project = comp_req_doc.to_dict()
-    
+
     @staticmethod
     def get_completion_requests_by_project_id(project_id, db):
         comp_req_doc = db.collection(u'complition_request').document().get()
@@ -292,17 +322,17 @@ class ProjectDataManagement:
             return None
         project = comp_req_doc.to_dict()
 
-
     @staticmethod
     def accept_completion_request(comp_req__id: str, user_id, db):
-        relations_doc = db.collection(u'relations').document(comp_req__id).stream()
+        relations_doc = db.collection(
+            u'relations').document(comp_req__id).stream()
         relations = [doc.to_dict() for doc in relations_doc]
         auth = False
         for rel in relations:
             if rel['user_id'] == user_id and rel['role'] == 'client':
                 auth = True
         if not auth:
-            raise HTTPException(status_code=401, detail="Not authorized")        
+            raise HTTPException(status_code=401, detail="Not authorized")
         record = db.collection('complition_request').document(comp_req__id)
         record.update({
             u'accepted': True,
@@ -315,18 +345,20 @@ class ProjectDataManagement:
                 'item_completion': item.item_completion
             })
         return True
-    
+
     @staticmethod
     def reject_completion_request(project_id: str, user_id: str, db):
-        complition_requests_objs = db.collection(u'complition_request').where(u'project_id', u'==', project_id).stream()
-        complition_requests = [doc.to_dict() for doc in complition_requests_objs]
-        comp_reqs 
+        complition_requests_objs = db.collection(u'complition_request').where(
+            u'project_id', u'==', project_id).stream()
+        complition_requests = [doc.to_dict()
+                               for doc in complition_requests_objs]
+        comp_reqs
         auth = False
         for rel in relations:
             if rel['user_id'] == user_id and rel['role'] == 'client':
                 auth = True
         if not auth:
-            raise HTTPException(status_code=401, detail="Not authorized")        
+            raise HTTPException(status_code=401, detail="Not authorized")
         record = db.collection('complition_request').document(comp_req__id)
         record.update({
             u'rejected': True,
